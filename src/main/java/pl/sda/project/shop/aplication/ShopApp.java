@@ -22,6 +22,7 @@ public class ShopApp {
         System.out.println("połączono");
         System.out.println("połączono");
         System.out.println("sprawdzamgita");
+        System.out.println("na lapku działa na PC nie");
 
         //showOils();
         testAddOil();

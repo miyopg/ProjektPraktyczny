@@ -21,7 +21,7 @@ public class ShopApp {
 
         System.out.println("połączono");
         System.out.println("połączono");
-
+        System.out.println("sprawdzamgita");
 
         //showOils();
         testAddOil();

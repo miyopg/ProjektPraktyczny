@@ -25,10 +25,10 @@ public class ShopApp {
 
 
         //showOils();
-       // testAddOil();
-        showOils();
-        deleteOilById(15);
-        showOils();
+       //testAddOil();
+        //showOils();
+        //deleteOilById(15);
+        //showOils();
         entityManager.close();
         entityManagerFactory.close();
     }

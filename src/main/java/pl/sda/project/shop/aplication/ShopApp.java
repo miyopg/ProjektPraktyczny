@@ -7,7 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import pl.sda.project.shop.extra.OilBrands;
 import pl.sda.project.shop.model.Oils;
 
+import javax.persistence.NoResultException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 
 @Slf4j
 public class ShopApp {
@@ -15,21 +17,18 @@ public class ShopApp {
     private static EntityManagerFactory entityManagerFactory;
     private static EntityManager entityManager;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         entityManagerFactory = Persistence.createEntityManagerFactory("sdashop");
         entityManager = entityManagerFactory.createEntityManager();
 
         System.out.println("połączono");
-        System.out.println("połączono");
-        System.out.println("sprawdzamgita");
-        System.out.println("na lapku działa na PC nie");
-        System.out.println("na lapku działa na PC nie");
-        System.out.println("na lapku asdasdasd nie");
+
 
         //showOils();
-        testAddOil();
+       // testAddOil();
         showOils();
-
+        deleteOilById(15);
+        showOils();
         entityManager.close();
         entityManagerFactory.close();
     }
@@ -45,14 +44,23 @@ public class ShopApp {
         return newOil;
     }
 
+    private static void deleteOilById (int id) throws SQLException {
+        entityManager.getTransaction().begin();
+
+        var query = entityManager.createQuery("select p from Oils p where p.id = :id", Oils.class);
+        query.setParameter("id", id);
+
+        try {
+            var oilID = query.getSingleResult();
+            entityManager.remove(oilID);
+            entityManager.getTransaction().commit();
+        } catch (NoResultException e) {
+            log.warn("Cannot delete non-existing Oil");
+        }
+    }
+
     private static void testAddOil() {
         Oils newOil = new Oils();
-       /* newOil.setId(100);
-        newOil.setBrand(OilBrands.ELF);
-        newOil.setDensity("60W-60");
-        newOil.setCapacity("10L");
-        newOil.setPrice(BigDecimal.valueOf(450));
-        newOil.setQuantity(1);*/
         newOil = addOil(OilBrands.ELF, "60W-60", "10L", BigDecimal.valueOf(450), 1);
         entityManager.getTransaction().begin();
         entityManager.persist(newOil);
@@ -68,7 +76,7 @@ public class ShopApp {
        // Oils singleResult = query.getSingleResult();
         var singleResult = query.getResultStream();
        // System.out.println(singleResult.count());
-       singleResult.forEach(oils -> System.out.println(oils.getBrand()));
+       singleResult.forEach(oils -> System.out.println(oils.getBrand() + " " + oils.getDensity()));
 
 
 

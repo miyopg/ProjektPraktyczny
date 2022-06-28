@@ -1,10 +1,7 @@
 package pl.sda.project.shop.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import pl.sda.project.shop.extra.OilBrands;
 
 import java.math.BigDecimal;
@@ -15,6 +12,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @ToString
+@EqualsAndHashCode
 public class Oils {
 
     @Id
@@ -26,7 +24,6 @@ public class Oils {
     protected String capacity;
     protected BigDecimal price;
     protected Integer quantity;
-
 
 
 }

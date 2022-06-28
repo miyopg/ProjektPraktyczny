@@ -4,85 +4,113 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import lombok.extern.slf4j.Slf4j;
-import pl.sda.project.shop.extra.OilBrands;
 import pl.sda.project.shop.model.Oils;
 
-import javax.persistence.NoResultException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
+import java.util.List;
+
+
+import static pl.sda.project.shop.extra.OilBrands.MOTUL;
 
 @Slf4j
 public class ShopApp {
 
+
     private static EntityManagerFactory entityManagerFactory;
     private static EntityManager entityManager;
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws Exception {
         entityManagerFactory = Persistence.createEntityManagerFactory("sdashop");
         entityManager = entityManagerFactory.createEntityManager();
 
         System.out.println("połączono");
+        Oils oilMotul1 = new Oils();
+        oilMotul1.setBrand(MOTUL);
+        oilMotul1.setCapacity("5");
+        oilMotul1.setDensity("5w30");
+        oilMotul1.setPrice(BigDecimal.valueOf(110));
+        oilMotul1.setQuantity(1);
+        Oils oilMotul2 = new Oils();
+        oilMotul2.setBrand(MOTUL);
+        oilMotul2.setCapacity("1");
+        oilMotul2.setDensity("5w40");
+        oilMotul2.setPrice(BigDecimal.valueOf(90));
+        oilMotul2.setQuantity(15);
 
+        showOils().forEach(System.out::println);
+        System.out.println("++++++++++++++++++++++++++++");
+        showOilsByDensity("5w40").forEach(System.out::println);
+        System.out.println("++++++++++++++++++++++++++++");
+        //addOilToDb(oilMotul2);
+        System.out.println("++++++++++++++++++++++++++++");
+        //changeOliQuantityById(1,200);
+        System.out.println("++++++++++++++++++++++++++++");
+        showOils().forEach(System.out::println);
 
-        //showOils();
-       //testAddOil();
-        //showOils();
-        //deleteOilById(15);
-        //showOils();
         entityManager.close();
         entityManagerFactory.close();
     }
 
 
-    private static Oils addOil(OilBrands brand, String density, String capacity, BigDecimal price, Integer quantity) {
-        var newOil = new Oils();
-        newOil.setBrand(brand);
-        newOil.setDensity(density);
-        newOil.setCapacity(capacity);
-        newOil.setPrice(price);
-        newOil.setQuantity(quantity);
-        return newOil;
-    }
-
-    private static void deleteOilById (int id) throws SQLException {
+    private static void addOil(Oils oil) {
         entityManager.getTransaction().begin();
-
-        var query = entityManager.createQuery("select p from Oils p where p.id = :id", Oils.class);
-        query.setParameter("id", id);
-
-        try {
-            var oilID = query.getSingleResult();
-            entityManager.remove(oilID);
-            entityManager.getTransaction().commit();
-        } catch (NoResultException e) {
-            log.warn("Cannot delete non-existing Oil");
-        }
-    }
-
-    private static void testAddOil() {
-        Oils newOil = new Oils();
-        newOil = addOil(OilBrands.ELF, "60W-60", "10L", BigDecimal.valueOf(450), 1);
-        entityManager.getTransaction().begin();
-        entityManager.persist(newOil);
+        entityManager.persist(oil);
         entityManager.getTransaction().commit();
     }
 
-    private static void showOils() {
-        String sql = """
-                        select p from Oils p
-                        """;
+    public static List<Oils> showOils() {
+        List<Oils> resultList;
+        return resultList = entityManager.createQuery("FROM Oils c", Oils.class)
+                .getResultList();
+    }
 
-        var query = entityManager.createQuery(sql, Oils.class);
-       // Oils singleResult = query.getSingleResult();
-        var singleResult = query.getResultStream();
-       // System.out.println(singleResult.count());
-       singleResult.forEach(oils -> System.out.println(oils.getBrand() + " " + oils.getDensity()));
+    public static List<Oils> showOilsByDensity(String density) {
+        List<Oils> resultList;
+        return resultList = entityManager.createQuery("FROM Oils c Where c.density = :density", Oils.class)
+                .setParameter("density", density)
+                .getResultList();
+    }
+    //dodaje olej do bazy danych jeśli jeszcze takiego nie ma więc nie dublujemy
+    public static void addOilToDb(Oils oil) {
+        List<Oils> resultList;
+         resultList = entityManager.createQuery("FROM Oils c Where c.density = :density And c.capacity = :capacity And c.brand = :name", Oils.class)
+                .setParameter("density", oil.getDensity())
+                .setParameter("capacity", oil.getCapacity())
+                .setParameter("name", oil.getBrand())
+                .getResultList();
+        if (resultList.isEmpty()){
+            System.out.println("Dodano nowy olej");
+            addOil(oil);
+        }
+        else {
+            System.out.println("Olej już istnieje w bazie danych");
+        }
+    }
 
+    public static void removeOilFromDbById(Integer id)throws Exception{
+        try {
+            Oils oil = entityManager.find(Oils.class, id);
+            entityManager.getTransaction().begin();
+            entityManager.remove(oil);
+            entityManager.getTransaction().commit();
+        }
+        catch (Exception e){
+            System.out.println("Brak oleju o takim id w bazie danych");
+        }
+    }
 
-
-
-        //log.info("Max: {}", singleResult.getBrand());
-
+    public static void changeOliQuantityById(Integer id, Integer quantity){
+        try {
+            Oils oil = entityManager.find(Oils.class, id);
+            oil.setQuantity(quantity);
+            entityManager.getTransaction().begin();
+            entityManager.merge(oil);
+            entityManager.getTransaction().commit();
+        }
+        catch (Exception e){
+            System.out.println("Brak oleju o takim id w bazie danych");
+        }
 
     }
 }
+

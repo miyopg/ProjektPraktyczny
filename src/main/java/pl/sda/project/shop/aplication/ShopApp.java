@@ -4,10 +4,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import lombok.extern.slf4j.Slf4j;
+import pl.sda.project.shop.model.Client;
 import pl.sda.project.shop.model.Oils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 import static pl.sda.project.shop.extra.OilBrands.MOTUL;
@@ -37,15 +40,19 @@ public class ShopApp {
         oilMotul2.setPrice(BigDecimal.valueOf(90));
         oilMotul2.setQuantity(15);
 
+        Client kowalskiJan = new Client("Jan","Kowalski","kowalski_jan99@poczta.pl",
+                "123456789","Popiełuszki","31-300","Chrubieszów");
+        Client kowalskiJan2 = new Client("Jan","Kowalski","kowalski_jan99@poczta@asdf.pl",
+                "123456789","Popiełuszki","31-300","Chrubieszów");
+        Client kowalskiJan3 = new Client("Jan","Kowalski","kowalski_jan99@poczta.pl",
+                "155","Popiełuszki","31-300","Chrubieszów");
+
+
         showOils().forEach(System.out::println);
         System.out.println("++++++++++++++++++++++++++++");
-        showOilsByDensity("5w40").forEach(System.out::println);
-        System.out.println("++++++++++++++++++++++++++++");
-        //addOilToDb(oilMotul2);
-        System.out.println("++++++++++++++++++++++++++++");
-        //changeOliQuantityById(1,200);
-        System.out.println("++++++++++++++++++++++++++++");
-        showOils().forEach(System.out::println);
+        showClients().forEach(System.out::println);
+
+
 
         entityManager.close();
         entityManagerFactory.close();
@@ -58,9 +65,22 @@ public class ShopApp {
         entityManager.getTransaction().commit();
     }
 
+    private static void addClients(Client client) {
+        entityManager.getTransaction().begin();
+        entityManager.persist(client);
+        entityManager.getTransaction().commit();
+    }
+
+
     public static List<Oils> showOils() {
         List<Oils> resultList;
         return resultList = entityManager.createQuery("FROM Oils c", Oils.class)
+                .getResultList();
+    }
+
+    public static List<Client> showClients() {
+        List<Client> resultList;
+        return resultList = entityManager.createQuery("FROM Client c", Client.class)
                 .getResultList();
     }
 
@@ -86,6 +106,28 @@ public class ShopApp {
             System.out.println("Olej już istnieje w bazie danych");
         }
     }
+    
+    public static void addClinetToDb(Client client) {
+        List<Client> resultList;
+        if (!emailAdressValidation(client.getEmail())){
+            System.out.println("Niepoprawny email");
+        }
+        else if (!phoneNumberValidation(client.getPhoneNumber())){
+            System.out.println("Niepoprawny nr telefonu");
+        }
+        else {
+            resultList = entityManager.createQuery("FROM Client c Where c.email = :email And c.phoneNumber = :number", Client.class)
+                    .setParameter("email", client.getEmail())
+                    .setParameter("number", client.getPhoneNumber())
+                    .getResultList();
+            if (resultList.isEmpty()) {
+                System.out.println("Dodano nowego Klienta");
+                addClients(client);
+            } else {
+                System.out.println("Klient jest już w bazie danych");
+            }
+        }
+    }
 
     public static void removeOilFromDbById(Integer id)throws Exception{
         try {
@@ -96,6 +138,18 @@ public class ShopApp {
         }
         catch (Exception e){
             System.out.println("Brak oleju o takim id w bazie danych");
+        }
+    }
+
+    public static void removeClientFromDbById(Integer id)throws Exception{
+        try {
+            Client client = entityManager.find(Client.class, id);
+            entityManager.getTransaction().begin();
+            entityManager.remove(client);
+            entityManager.getTransaction().commit();
+        }
+        catch (Exception e){
+            System.out.println("Brak klienta o takim id w bazie danych");
         }
     }
 
@@ -112,5 +166,23 @@ public class ShopApp {
         }
 
     }
+
+    public static boolean emailAdressValidation(String email) {
+        boolean result;
+        Pattern pattern = Pattern.compile("^[A-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[A-Z0-9_!#$%&'*+/=?`{|}~^-]+↵\n" +
+                ")*@[A-Z0-9-]+(?:\\.[A-Z0-9-]+)*$", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+        result = matcher.find();
+        return result;
+    }
+
+    public static boolean phoneNumberValidation(String phoneNumber) {
+        boolean result;
+        Pattern pattern = Pattern.compile("^[0-9]{9}$");
+        Matcher matcher = pattern.matcher(phoneNumber);
+        result = matcher.find();
+        return result;
+    }
+
 }
 

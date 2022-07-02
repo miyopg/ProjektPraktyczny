@@ -38,9 +38,11 @@ public class ShopApp {
         entityManager = entityManagerFactory.createEntityManager();
 
         System.out.println("połączono");
-        Basket basket = new Basket();
 
         System.out.println(showOilsById(1));
+        //removeBasketFromDbById(1);
+        showBaskets().forEach(System.out::println);
+
 
         //simpleMenu();
 
@@ -69,6 +71,7 @@ public class ShopApp {
         entityManager.getTransaction().begin();
         entityManager.persist(basket);
         entityManager.getTransaction().commit();
+        System.out.println("Dodano zakup");
     }
 
     private static void addClients(Client client) {
@@ -80,6 +83,13 @@ public class ShopApp {
     public static List<Oils> showOils() {
         List<Oils> resultList;
         return resultList = entityManager.createQuery("FROM Oils c", Oils.class)
+                .getResultList();
+    }
+
+
+    public static List<Basket> showBaskets() {
+        List<Basket> resultList;
+        return resultList = entityManager.createQuery("FROM Basket c", Basket.class)
                 .getResultList();
     }
 
@@ -95,14 +105,26 @@ public class ShopApp {
                 .setParameter("id", id)
                 .getResultList();
     }
-    public static List<String> showOilsById(Integer id) {
-        List<String> resultList;
-        return resultList = entityManager.createQuery("FROM Oils c Where c.id = :id", String.class)
-                .setParameter("id", id)
-                .getResultList()
-                .stream()
-                .collect(Collectors.toList());
 
+    public static Client getClientsById(long id) {
+        Client result;
+        return result = entityManager.createQuery("FROM Client c Where c.id = :id", Client.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
+    public static Oils showOilsById(Integer id) {
+        Oils result;
+        return result = entityManager.createQuery("FROM Oils c Where c.id = :id", Oils.class)
+                .setParameter("id", id)
+                .getSingleResult();
+    }
+
+    public static Oils getOilsById(Integer id) {
+        Oils result;
+        return result = entityManager.createQuery("FROM Oils c Where c.id = :id", Oils.class)
+                .setParameter("id", id)
+                .getSingleResult();
     }
 
     public static List<Oils> showOilsByDensity(String density) {
@@ -164,6 +186,17 @@ public class ShopApp {
             entityManager.getTransaction().commit();
         } catch (Exception e) {
             System.out.println("Brak oleju o takim id w bazie danych");
+        }
+    }
+
+    public static void removeBasketFromDbById(Integer id) throws Exception {
+        try {
+            Basket basket = entityManager.find(Basket.class, id);
+            entityManager.getTransaction().begin();
+            entityManager.remove(basket);
+            entityManager.getTransaction().commit();
+        } catch (Exception e) {
+            System.out.println("Brak koszyka o takim id w bazie danych");
         }
     }
 

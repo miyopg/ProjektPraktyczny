@@ -3,6 +3,7 @@ package pl.sda.project.shop.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @ToString
+@Setter
 
 
 public class Client {
@@ -33,6 +35,13 @@ public class Client {
     @Column(name = "city", nullable = false, length = 64 )
     protected String city;
 
-
-
+    public Client(String firstName, String lastName, String email, String phoneNumber, String street, String postCode, String city) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.street = street;
+        this.postCode = postCode;
+        this.city = city;
+    }
 }

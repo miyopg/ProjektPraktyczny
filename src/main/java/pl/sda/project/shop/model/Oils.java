@@ -26,6 +26,14 @@ public class Oils {
     protected BigDecimal price;
     protected Integer quantity;
 
+    public Oils(OilBrands brand, String density, String capacity, BigDecimal price, Integer quantity) {
+        this.brand = brand;
+        this.density = density;
+        this.capacity = capacity;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

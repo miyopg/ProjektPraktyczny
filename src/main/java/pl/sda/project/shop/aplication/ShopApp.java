@@ -16,8 +16,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-import static pl.sda.project.shop.extra.OilBrands.MOTUL;
+import static pl.sda.project.shop.extra.OilBrands.*;
 
 @Slf4j
 public class ShopApp {
@@ -35,7 +34,6 @@ public class ShopApp {
         entityManagerFactory = Persistence.createEntityManagerFactory("sdashop");
         entityManager = entityManagerFactory.createEntityManager();
 
-
         System.out.println("połączono");
 
         simpleMenu();
@@ -50,9 +48,10 @@ public class ShopApp {
         String phoneNumber = scanner.nextLine();
         System.out.println("Podaj email:");
         String email = scanner.nextLine();
-        loggingIn(phoneNumber,email);
+        loggingIn(phoneNumber, email);
+        System.out.println("1. Powrót");
+        String ret = scanner.nextLine();
     }
-
 
     private static void addOil(Oils oil) {
         entityManager.getTransaction().begin();
@@ -77,6 +76,7 @@ public class ShopApp {
         return resultList = entityManager.createQuery("FROM Client c", Client.class)
                 .getResultList();
     }
+
     public static List<Client> showClientsById(long id) {
         List<Client> resultList;
         return resultList = entityManager.createQuery("FROM Client c Where c.id = :id", Client.class)
@@ -201,11 +201,12 @@ public class ShopApp {
             System.out.println("8. Dodaj olej do koszyka");
             System.out.println("9. Pokaż koszyk klienta");
             System.out.println("10. Podsumuj koszyk klienta");
-            System.out.println("11. Zakończ");
+            System.out.println("11. Admin");
+            System.out.println("12. Zakończ");
             menu = scanner.nextInt();
             switch (menu) {
                 case 1:
-                    showOils().forEach(System.out::println);
+                    showAllOilsMenu();
                     break;
                 case 2:
                     showOilsMenu();
@@ -217,7 +218,7 @@ public class ShopApp {
                     loggingInMenu();
                     break;
                 case 5:
-                    showClients().forEach(System.out::println);
+                    showAllClientsMenu();
                     break;
                 case 6:
                     showLogedClientMenu();
@@ -226,16 +227,70 @@ public class ShopApp {
                     logOut();
                     break;
                 case 8:
-                    showClients().forEach(System.out::println);
+                    System.out.println("work in progress");
+                    break;
+                case 9:
+                    System.out.println("work in progress");
+                    break;
+                case 10:
+                    System.out.println("work in progress");
+                    break;
+                case 11:
+                    adminMenu();
+                    break;
+                default:
+                    System.out.println("Do zobaczenia");
+                    break;
+            }
+        } while (menu != 12);
+    }
+
+    public static void adminMenu() {
+        do {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Admin menu");
+            System.out.println("1. Pokaż całą ofertę oleji");
+            System.out.println("2. Wyszukaj Olej");
+            System.out.println("3. Dodaj olej do bazy danych");
+            System.out.println("4. Usuń olej z bazy danych");
+            System.out.println("5. Aktualizuj ceny");
+            System.out.println("6. Aktualizuj stany");
+            System.out.println("7. Pokaż listę klientów");
+            System.out.println("8. Usuń klienta z bazy danych");
+            System.out.println("9. Zakończ");
+            menu = scanner.nextInt();
+            switch (menu) {
+                case 1:
+                    showAllOilsMenu();
+                    break;
+                case 2:
+                    System.out.println("work in progress");
+                    break;
+                case 3:
+                    System.out.println("work in progress");
+                    break;
+                case 4:
+                    System.out.println("work in progress");
+                    break;
+                case 5:
+                    System.out.println("work in progress");
+                    break;
+                case 6:
+                    System.out.println("work in progress");
+                    break;
+                case 7:
+                    System.out.println("work in progress");
+                    break;
+                case 8:
+                    System.out.println("work in progress");
                     break;
 
                 default:
                     System.out.println("Do zobaczenia");
                     break;
             }
-        } while (menu != 11);
+        } while (menu != 9);
     }
-
 
     public static void addingClientMenu() {
         Scanner scanner = new Scanner(System.in);
@@ -262,6 +317,8 @@ public class ShopApp {
         String postCode = scanner.nextLine();
         client.setPostCode(street);
         addClientToDb(client);
+        System.out.println("1. Powrót");
+        String ret = scanner.nextLine();
     }
 
     public static void showOilsMenu() {
@@ -271,41 +328,68 @@ public class ShopApp {
         String choice = scanner.nextLine();
         if (choice.equals("1")) {
             System.out.println("work in progress");
+            System.out.println("1. Powrót");
+            String ret = scanner.nextLine();
 
         } else {
             System.out.println("Podaj gęstość");
             String density = scanner.nextLine();
-            showOilsByDensity(density).forEach(System.out::println);
+            if (showOilsByDensity(density).isEmpty()){
+                System.out.println("Brak podanego oleju w bazie danych");
+            }else {
+                showOilsByDensity(density).forEach(System.out::println);
+            }
+            System.out.println("1. Powrót");
+            String ret = scanner.nextLine();
         }
     }
 
-    public static void loggingIn(String phoneNumber, String email){
+    public static void loggingIn(String phoneNumber, String email) {
         Optional<Client> client = null;
         client = Optional.ofNullable(entityManager.createQuery("FROM Client c Where c.email = :email And c.phoneNumber = :number", Client.class)
                 .setParameter("email", email)
                 .setParameter("number", phoneNumber)
                 .getSingleResult());
-       if (client.isPresent()){
-           loggedIn = true;
+        if (client.isPresent()) {
+            loggedIn = true;
             loggedClient = client.get();
-           System.out.println("Zalogowano");
-       }
-       else {
-           System.out.println("Niepoprawne dane");
-       }
-    }
-
-    public static void showLogedClientMenu(){
-        if (loggedIn) {
-            showClientsById(loggedClient.getId()).forEach(System.out::println);
-        }else {
-            System.out.println("Brak zalogowanego klienta");
+            System.out.println("Zalogowano");
+        } else {
+            System.out.println("Niepoprawne dane");
         }
     }
 
-    public static void logOut(){
+    public static void showLogedClientMenu() {
+        Scanner scanner = new Scanner(System.in);
+        if (loggedIn) {
+            showClientsById(loggedClient.getId()).forEach(System.out::println);
+        } else {
+            System.out.println("Brak zalogowanego klienta");
+        }
+        System.out.println("1. Powrót");
+        String ret = scanner.nextLine();
+    }
+
+    public static void logOut() {
+        Scanner scanner = new Scanner(System.in);
         loggedIn = false;
         System.out.println("Wylogowano");
+        System.out.println("1. Powrót");
+        String ret = scanner.nextLine();
+    }
+
+    public static void showAllOilsMenu(){
+        Scanner scanner = new Scanner(System.in);
+        showOils().forEach(System.out::println);
+        System.out.println("1. Powrót");
+        String ret = scanner.nextLine();
+    }
+
+    public static void showAllClientsMenu(){
+        Scanner scanner = new Scanner(System.in);
+        showClients().forEach(System.out::println);
+        System.out.println("1. Powrót");
+        String ret = scanner.nextLine();
     }
 
 }

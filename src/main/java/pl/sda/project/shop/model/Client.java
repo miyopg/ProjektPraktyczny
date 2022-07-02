@@ -3,6 +3,7 @@ package pl.sda.project.shop.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @ToString
+@Setter
 
 
 public class Client {

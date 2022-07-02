@@ -5,6 +5,7 @@ import lombok.*;
 import pl.sda.project.shop.extra.OilBrands;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Set;
 
 @Setter
@@ -12,7 +13,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @ToString
-@EqualsAndHashCode
+
 public class Oils {
 
     @Id
@@ -25,5 +26,16 @@ public class Oils {
     protected BigDecimal price;
     protected Integer quantity;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Oils oils = (Oils) o;
+        return Objects.equals(id, oils.id) && brand.getName() == oils.brand.getName() && Objects.equals(density, oils.density) && Objects.equals(capacity, oils.capacity) && Objects.equals(price, oils.price) && Objects.equals(quantity, oils.quantity);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, brand, density, capacity, price, quantity);
+    }
 }

@@ -1,14 +1,18 @@
 package pl.sda.project.shop.aplication;
 
+import jakarta.persistence.Convert;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import lombok.extern.slf4j.Slf4j;
+import pl.sda.project.shop.extra.OilBrands;
 import pl.sda.project.shop.model.Client;
 import pl.sda.project.shop.model.Oils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,41 +25,32 @@ public class ShopApp {
 
     private static EntityManagerFactory entityManagerFactory;
     private static EntityManager entityManager;
+    static boolean loggedIn = false;
+    private static Client loggedClient;
+    private static int menu;
 
     public static void main(String[] args) throws Exception {
+
+
         entityManagerFactory = Persistence.createEntityManagerFactory("sdashop");
         entityManager = entityManagerFactory.createEntityManager();
 
+
         System.out.println("połączono");
-        Oils oilMotul1 = new Oils();
-        oilMotul1.setBrand(MOTUL);
-        oilMotul1.setCapacity("5");
-        oilMotul1.setDensity("5w30");
-        oilMotul1.setPrice(BigDecimal.valueOf(110));
-        oilMotul1.setQuantity(1);
-        Oils oilMotul2 = new Oils();
-        oilMotul2.setBrand(MOTUL);
-        oilMotul2.setCapacity("1");
-        oilMotul2.setDensity("5w40");
-        oilMotul2.setPrice(BigDecimal.valueOf(90));
-        oilMotul2.setQuantity(15);
 
-        Client kowalskiJan = new Client("Jan","Kowalski","kowalski_jan99@poczta.pl",
-                "123456789","Popiełuszki","31-300","Chrubieszów");
-        Client kowalskiJan2 = new Client("Jan","Kowalski","kowalski_jan99@poczta@asdf.pl",
-                "123456789","Popiełuszki","31-300","Chrubieszów");
-        Client kowalskiJan3 = new Client("Jan","Kowalski","kowalski_jan99@poczta.pl",
-                "155","Popiełuszki","31-300","Chrubieszów");
-
-
-        showOils().forEach(System.out::println);
-        System.out.println("++++++++++++++++++++++++++++");
-        showClients().forEach(System.out::println);
-
-
+        simpleMenu();
 
         entityManager.close();
         entityManagerFactory.close();
+    }
+
+    private static void loggingInMenu() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Podaj nr telefonu:");
+        String phoneNumber = scanner.nextLine();
+        System.out.println("Podaj email:");
+        String email = scanner.nextLine();
+        loggingIn(phoneNumber,email);
     }
 
 
@@ -71,7 +66,6 @@ public class ShopApp {
         entityManager.getTransaction().commit();
     }
 
-
     public static List<Oils> showOils() {
         List<Oils> resultList;
         return resultList = entityManager.createQuery("FROM Oils c", Oils.class)
@@ -83,6 +77,12 @@ public class ShopApp {
         return resultList = entityManager.createQuery("FROM Client c", Client.class)
                 .getResultList();
     }
+    public static List<Client> showClientsById(long id) {
+        List<Client> resultList;
+        return resultList = entityManager.createQuery("FROM Client c Where c.id = :id", Client.class)
+                .setParameter("id", id)
+                .getResultList();
+    }
 
     public static List<Oils> showOilsByDensity(String density) {
         List<Oils> resultList;
@@ -90,32 +90,38 @@ public class ShopApp {
                 .setParameter("density", density)
                 .getResultList();
     }
+
+    public static List<Oils> showOilsByName(String name) {
+        List<Oils> resultList;
+
+        return resultList = entityManager.createQuery("FROM Oils c Where c.brand = :name", Oils.class)
+                .setParameter("name", name)
+                .getResultList();
+    }
+
     //dodaje olej do bazy danych jeśli jeszcze takiego nie ma więc nie dublujemy
     public static void addOilToDb(Oils oil) {
         List<Oils> resultList;
-         resultList = entityManager.createQuery("FROM Oils c Where c.density = :density And c.capacity = :capacity And c.brand = :name", Oils.class)
+        resultList = entityManager.createQuery("FROM Oils c Where c.density = :density And c.capacity = :capacity And c.brand = :name", Oils.class)
                 .setParameter("density", oil.getDensity())
                 .setParameter("capacity", oil.getCapacity())
                 .setParameter("name", oil.getBrand())
                 .getResultList();
-        if (resultList.isEmpty()){
+        if (resultList.isEmpty()) {
             System.out.println("Dodano nowy olej");
             addOil(oil);
-        }
-        else {
+        } else {
             System.out.println("Olej już istnieje w bazie danych");
         }
     }
-    
-    public static void addClinetToDb(Client client) {
+
+    public static void addClientToDb(Client client) {
         List<Client> resultList;
-        if (!emailAdressValidation(client.getEmail())){
+        if (!emailAdressValidation(client.getEmail())) {
             System.out.println("Niepoprawny email");
-        }
-        else if (!phoneNumberValidation(client.getPhoneNumber())){
+        } else if (!phoneNumberValidation(client.getPhoneNumber())) {
             System.out.println("Niepoprawny nr telefonu");
-        }
-        else {
+        } else {
             resultList = entityManager.createQuery("FROM Client c Where c.email = :email And c.phoneNumber = :number", Client.class)
                     .setParameter("email", client.getEmail())
                     .setParameter("number", client.getPhoneNumber())
@@ -129,39 +135,36 @@ public class ShopApp {
         }
     }
 
-    public static void removeOilFromDbById(Integer id)throws Exception{
+    public static void removeOilFromDbById(Integer id) throws Exception {
         try {
             Oils oil = entityManager.find(Oils.class, id);
             entityManager.getTransaction().begin();
             entityManager.remove(oil);
             entityManager.getTransaction().commit();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Brak oleju o takim id w bazie danych");
         }
     }
 
-    public static void removeClientFromDbById(Integer id)throws Exception{
+    public static void removeClientFromDbById(Integer id) throws Exception {
         try {
             Client client = entityManager.find(Client.class, id);
             entityManager.getTransaction().begin();
             entityManager.remove(client);
             entityManager.getTransaction().commit();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Brak klienta o takim id w bazie danych");
         }
     }
 
-    public static void changeOliQuantityById(Integer id, Integer quantity){
+    public static void changeOliQuantityById(Integer id, Integer quantity) {
         try {
             Oils oil = entityManager.find(Oils.class, id);
             oil.setQuantity(quantity);
             entityManager.getTransaction().begin();
             entityManager.merge(oil);
             entityManager.getTransaction().commit();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Brak oleju o takim id w bazie danych");
         }
 
@@ -182,6 +185,127 @@ public class ShopApp {
         Matcher matcher = pattern.matcher(phoneNumber);
         result = matcher.find();
         return result;
+    }
+
+    public static void simpleMenu() {
+        do {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Sda Sklep");
+            System.out.println("1. Pokaż całą ofertę oleji");
+            System.out.println("2. Wyszukaj Olej");
+            System.out.println("3. Zarejestruj Klienta");
+            System.out.println("4. Zaloguj Klienta");
+            System.out.println("5. Pokaż listę klientów");
+            System.out.println("6. Pokaż zalogowanego klientów");
+            System.out.println("7. Wyloguj klienta");
+            System.out.println("8. Dodaj olej do koszyka");
+            System.out.println("9. Pokaż koszyk klienta");
+            System.out.println("10. Podsumuj koszyk klienta");
+            System.out.println("11. Zakończ");
+            menu = scanner.nextInt();
+            switch (menu) {
+                case 1:
+                    showOils().forEach(System.out::println);
+                    break;
+                case 2:
+                    showOilsMenu();
+                    break;
+                case 3:
+                    addingClientMenu();
+                    break;
+                case 4:
+                    loggingInMenu();
+                    break;
+                case 5:
+                    showClients().forEach(System.out::println);
+                    break;
+                case 6:
+                    showLogedClientMenu();
+                    break;
+                case 7:
+                    logOut();
+                    break;
+                case 8:
+                    showClients().forEach(System.out::println);
+                    break;
+
+                default:
+                    System.out.println("Do zobaczenia");
+                    break;
+            }
+        } while (menu != 11);
+    }
+
+
+    public static void addingClientMenu() {
+        Scanner scanner = new Scanner(System.in);
+        Client client = new Client();
+        System.out.println("Podaj imie:");
+        String name = scanner.nextLine();
+        client.setFirstName(name);
+        System.out.println("Podaj nazwisko:");
+        String secondName = scanner.nextLine();
+        client.setLastName(secondName);
+        System.out.println("Podaj email:");
+        String email = scanner.nextLine();
+        client.setEmail(email);
+        System.out.println("Podaj numer telefony:");
+        String phoneNumber = scanner.nextLine();
+        client.setPhoneNumber(phoneNumber);
+        System.out.println("Podaj miasto:");
+        String city = scanner.nextLine();
+        client.setCity(city);
+        System.out.println("Podaj ulicę:");
+        String street = scanner.nextLine();
+        client.setStreet(street);
+        System.out.println("Podaj kod pocztowy:");
+        String postCode = scanner.nextLine();
+        client.setPostCode(street);
+        addClientToDb(client);
+    }
+
+    public static void showOilsMenu() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("1. Po nazwie");
+        System.out.println("2. Po gęstości");
+        String choice = scanner.nextLine();
+        if (choice.equals("1")) {
+            System.out.println("work in progress");
+
+        } else {
+            System.out.println("Podaj gęstość");
+            String density = scanner.nextLine();
+            showOilsByDensity(density).forEach(System.out::println);
+        }
+    }
+
+    public static void loggingIn(String phoneNumber, String email){
+        Optional<Client> client = null;
+        client = Optional.ofNullable(entityManager.createQuery("FROM Client c Where c.email = :email And c.phoneNumber = :number", Client.class)
+                .setParameter("email", email)
+                .setParameter("number", phoneNumber)
+                .getSingleResult());
+       if (client.isPresent()){
+           loggedIn = true;
+            loggedClient = client.get();
+           System.out.println("Zalogowano");
+       }
+       else {
+           System.out.println("Niepoprawne dane");
+       }
+    }
+
+    public static void showLogedClientMenu(){
+        if (loggedIn) {
+            showClientsById(loggedClient.getId()).forEach(System.out::println);
+        }else {
+            System.out.println("Brak zalogowanego klienta");
+        }
+    }
+
+    public static void logOut(){
+        loggedIn = false;
+        System.out.println("Wylogowano");
     }
 
 }

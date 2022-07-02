@@ -17,7 +17,7 @@ public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    protected Integer id;
     @Column(name = "first_name", nullable = false, length = 32 )
     protected String firstName;
     @Column(name = "last_name", nullable = false, length = 32, insertable = false, updatable = false)
@@ -33,6 +33,14 @@ public class Client {
     @Column(name = "city", nullable = false, length = 64 )
     protected String city;
 
-
-
+    public Client(Integer id, String firstName, String lastName, String email, String phoneNumber, String street, String postCode, String city) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.street = street;
+        this.postCode = postCode;
+        this.city = city;
+    }
 }

@@ -6,15 +6,18 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import lombok.extern.slf4j.Slf4j;
 import pl.sda.project.shop.extra.OilBrands;
+import pl.sda.project.shop.model.Basket;
 import pl.sda.project.shop.model.Client;
 import pl.sda.project.shop.model.Oils;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static pl.sda.project.shop.extra.OilBrands.*;
 
@@ -35,8 +38,11 @@ public class ShopApp {
         entityManager = entityManagerFactory.createEntityManager();
 
         System.out.println("połączono");
+        Basket basket = new Basket();
 
-        simpleMenu();
+        System.out.println(showOilsById(1));
+
+        //simpleMenu();
 
         entityManager.close();
         entityManagerFactory.close();
@@ -56,6 +62,12 @@ public class ShopApp {
     private static void addOil(Oils oil) {
         entityManager.getTransaction().begin();
         entityManager.persist(oil);
+        entityManager.getTransaction().commit();
+    }
+
+    private static void addBasket(Basket basket) {
+        entityManager.getTransaction().begin();
+        entityManager.persist(basket);
         entityManager.getTransaction().commit();
     }
 
@@ -82,6 +94,15 @@ public class ShopApp {
         return resultList = entityManager.createQuery("FROM Client c Where c.id = :id", Client.class)
                 .setParameter("id", id)
                 .getResultList();
+    }
+    public static List<String> showOilsById(Integer id) {
+        List<String> resultList;
+        return resultList = entityManager.createQuery("FROM Oils c Where c.id = :id", String.class)
+                .setParameter("id", id)
+                .getResultList()
+                .stream()
+                .collect(Collectors.toList());
+
     }
 
     public static List<Oils> showOilsByDensity(String density) {

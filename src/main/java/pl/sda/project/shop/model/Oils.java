@@ -12,7 +12,6 @@ import java.util.Set;
 @Entity
 @Getter
 @NoArgsConstructor
-@ToString
 
 public class Oils {
 
@@ -27,11 +26,23 @@ public class Oils {
     protected Integer quantity;
 
     public Oils(OilBrands brand, String density, String capacity, BigDecimal price, Integer quantity) {
-        this.brand = brand;
+        this.brand = OilBrands.valueOf(brand.getName());
         this.density = density;
         this.capacity = capacity;
         this.price = price;
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "Oils{" +
+                "id=" + id +
+                ", brand=" + brand.getName() +
+                ", density='" + density + '\'' +
+                ", capacity='" + capacity + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                '}';
     }
 
     @Override

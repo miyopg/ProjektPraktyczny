@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import lombok.extern.slf4j.Slf4j;
-import pl.sda.project.shop.model.BasketNoDb;
+import pl.sda.project.shop.model.Basket;
 import pl.sda.project.shop.model.Client;
 import pl.sda.project.shop.model.Oils;
 
@@ -28,7 +28,7 @@ public class ShopApp {
         entityManagerFactory = Persistence.createEntityManagerFactory("sdashop");
         entityManager = entityManagerFactory.createEntityManager();
 
-
+/*
         Oils oilMotul1 = new Oils();
         oilMotul1.setId(1);
         oilMotul1.setBrand(MOTUL);
@@ -44,30 +44,63 @@ public class ShopApp {
         oilMotul2.setPrice(BigDecimal.valueOf(90));
         oilMotul2.setQuantity(15);
 
-        Client kowalskiJan = new Client(1,"Jan","Kowalski","kowalski_jan99@poczta.pl",
+        Client kowalskiJan = new Client("Jan","Kowalski","kowalski_jan99@poczta.pl",
                 "123456789","Popiełuszki","31-300","Chrubieszów");
-        Client kowalskiJan2 = new Client(2,"Jan","Kowalski","kowalski_jan99@poczta@asdf.pl",
+        *//*Client kowalskiJan2 = new Client(2,"Jan","Kowalski","kowalski_jan99@poczta@asdf.pl",
                 "123456789","Popiełuszki","31-300","Chrubieszów");
         Client kowalskiJan3 = new Client(3,"Jan","Kowalski","kowalski_jan99@poczta.pl",
-                "155","Popiełuszki","31-300","Chrubieszów");
+                "155","Popiełuszki","31-300","Chrubieszów");*//*
 
 
         showOils().forEach(System.out::println);
         System.out.println("++++++++++++++++++++++++++++");
-        showClients().forEach(System.out::println);
+        showClients().forEach(System.out::println);*/
 
-        BasketNoDb basketNoDb = new BasketNoDb(1,2);
+        /*BasketNoDb basketNoDb = new BasketNoDb(1,2);
         basketNoDb.addClientToBasket(kowalskiJan);
         basketNoDb.addOilToBasket(oilMotul1);
         basketNoDb.addQuantityOil(2);
         basketNoDb.addOilToBasket(oilMotul2);
         basketNoDb.addDate();
         basketNoDb.printBasketNoDbInfo();
-        System.out.println();
+        System.out.println();*/
+
+       /* Basket basket = new Basket();
+        basket.setDate(LocalDate.now());
+        basket.setClientId(9);
+        basket.setOilId(1);
+        basket.setOilQuantity(4);*/
+
+        System.out.println(showBasketByClientId(9));
+
+
+        System.out.println("=============");
+
 
         entityManager.close();
         entityManagerFactory.close();
     }
+
+    private static List<Basket> showBasketByClientId(int i){
+          List<Basket> resultList;
+            return resultList = entityManager.createQuery("FROM Basket c where c.clientId = :clientId", Basket.class)
+                    .setParameter("clientId", i)
+                    .getResultList();
+        }
+
+
+    private static void addBasket(Basket basket) {
+        entityManager.getTransaction().begin();
+        entityManager.persist(basket);
+        entityManager.getTransaction().commit();
+    }
+
+    private static void selectClientId(Client client) {
+        List<Client> clientfromDB = entityManager.createQuery("FROM clients c Where c.clientId = :clientId", Client.class)
+                .setParameter("clientId", client.getId())
+                .getResultList();
+    }
+
 
 
     private static void addOil(Oils oil) {

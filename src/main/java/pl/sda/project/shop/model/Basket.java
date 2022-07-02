@@ -1,50 +1,66 @@
 package pl.sda.project.shop.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import net.bytebuddy.asm.Advice;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
 @Setter
 @Table(name = "basket")
 
 public class Basket{
 
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    protected Integer id;
     @Column(name = "order_date", nullable = false)
     protected LocalDate date;
     @Column(name = "client_id")
     protected Integer clientId;
     @Column(name = "oil_id")
     protected Integer oilId;
-    @Column(name = "oil_list")
-    private String oilList;
+    @Column(name = "oil_quantity")
+    private Integer oilQuantity;
+
+    @Override
+    public String toString() {
+        return "Basket{" +
+                "id=" + id +
+                ", date=" + date +
+                ", clientId=" + clientId +
+                ", oilId=" + oilId +
+                ", oilQuantity=" + oilQuantity +
+                '}';
+    }
+}
+/*
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Integer id;
+    @Column(name = "order_date", nullable = false)
+    protected LocalDate date;
+    @Column(name = "client_id")
+    protected Integer clientId;
+    @Column(name = "oil_id")
+    protected Integer oilId;
+    @Column(name = "oil_quantity")
+    private Integer oilQuantity;
 
 
 
-    public Integer addOilToBasket(Oils oil) {
+    public Integer addOilIdToOrder(Oils oil) {
         oilId = oil.getId();
         return oilId;
     }
 
-    public Integer addClientToBasket(Client client) {
-        clientId = client.getId();
-        return clientId;
+    public Integer addClientToBasket(Integer clientId) {
+       return clientId;
     }
 
     public LocalDate addDate() {
@@ -52,16 +68,19 @@ public class Basket{
         return date;
     }
 
-    public Basket(Long id, LocalDate date, Integer clientId, String oilList, Oils oil) {
+
+    public Basket(Integer id, LocalDate date, Integer clientId, Integer oilId, Integer oilQuantity) {
         this.id = id;
         this.date = date;
         this.clientId = clientId;
-        this.oilList = oilList;
+        this.oilId = oilId;
+        this.oilQuantity = oilQuantity;
     }
 
-    public void printBasketInfo() {
-        List<Oils> oilsList = new ArrayList<>();
-        System.out.println("Basket id: " + id + ", Date: " + date + ", Client id: " + clientId + ", Oils List: ");
-    }
+   */
+/* public void printBasketInfo() {
 
-}
+        System.out.println("Basket id: " + id + ", Date: " + date + ", Client id: " + clientId + ", Oils id: " + oilId + "(quantity : " + oilQuantity + ")");
+    } */
+
+

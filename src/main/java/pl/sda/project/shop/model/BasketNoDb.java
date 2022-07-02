@@ -27,6 +27,8 @@ public class BasketNoDb{
 
     protected Integer oilId;
 
+    protected Integer oilQuantity;
+
     private Set<Oils> oilList;
 
 
@@ -35,11 +37,7 @@ public class BasketNoDb{
         return oilList.add(oil);
     }
 
-    public Integer addQuantityOil(Integer quantityOil) {
-        return quantityOil;
-    }
-
-    public Integer addClientToBasket(Client client) {
+   public Integer addClientToBasket(Client client) {
         clientId = client.getId();
         return clientId;
     }

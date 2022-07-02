@@ -39,12 +39,7 @@ public class ShopApp {
 
         System.out.println("połączono");
 
-        System.out.println(showOilsById(1));
-        //removeBasketFromDbById(1);
-        showBaskets().forEach(System.out::println);
-
-
-        //simpleMenu();
+        simpleMenu();
 
         entityManager.close();
         entityManagerFactory.close();
